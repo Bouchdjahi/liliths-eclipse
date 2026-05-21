@@ -1,26 +1,54 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    background: #000000;
+    color: #e0e0e0;
+    overflow-x: hidden;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #0a0a1a;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #4a4aff;
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #7a7aff;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .glassmorphism {
+    background: rgba(10, 10, 26, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(74, 74, 255, 0.3);
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 10px rgba(74, 74, 255, 0.5);
+  }
+  
+  .cosmic-border {
+    border-image: linear-gradient(135deg, #4a4aff, #9a4aff) 1;
+    border-style: solid;
+    border-width: 1px;
+  }
 }

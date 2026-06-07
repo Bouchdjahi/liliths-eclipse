@@ -5,25 +5,25 @@ import GatewayEntrance from '@/components/GatewayEntrance'
 import { useRouter } from 'next/navigation'
 
 export default function Home() {
-  const [hasEntered, setHasEntered] = useState(false)
+  const [showGateway, setShowGateway] = useState(true)
   const router = useRouter()
-
-  const handleEnter = () => {
-    setHasEntered(true)
-    // Replace the current history entry instead of pushing
-    router.replace('/eclipse-universe')
-  }
 
   // Check if user has already entered
   useEffect(() => {
-    const entered = localStorage.getItem('hasEntered')
-    if (entered === 'true') {
-      setHasEntered(true)
-      router.replace('/eclipse-universe')
+    const hasEntered = localStorage.getItem('hasEnteredUniverse')
+    if (hasEntered === 'true') {
+      setShowGateway(false)
+      router.replace('/space')
     }
   }, [])
 
-  if (!hasEntered) {
+  const handleEnter = () => {
+    setShowGateway(false)
+    localStorage.setItem('hasEnteredUniverse', 'true')
+    router.push('/space')
+  }
+
+  if (showGateway) {
     return <GatewayEntrance onEnter={handleEnter} />
   }
 

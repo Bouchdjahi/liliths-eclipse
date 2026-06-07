@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/context/LanguageContext'
@@ -9,6 +9,8 @@ export default function EclipseSequence() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const router = useRouter()
   const { language, toggleLanguage } = useLanguage()
+  const [rotationAngle, setRotationAngle] = useState(0)
+  const [moonPositions, setMoonPositions] = useState<Array<{x: number, y: number, label: string, route: string, special: string | boolean}>>([])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -17,7 +19,6 @@ export default function EclipseSequence() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Check if mobile
     const isMobile = window.innerWidth < 768
 
     const setCanvasSize = () => {
@@ -30,51 +31,32 @@ export default function EclipseSequence() {
     }
     setCanvasSize()
 
-    // Retrieve persistent system rotation angle from sessionStorage
-    let rotationAngle = 0
+    let savedRotation = 0
     if (typeof window !== 'undefined') {
       const savedAngle = sessionStorage.getItem('eclipse_rotation_angle')
       if (savedAngle) {
-        rotationAngle = parseFloat(savedAngle)
+        savedRotation = parseFloat(savedAngle)
       }
     }
-
-    let hoveredX = -1000
-    let hoveredY = -1000
-    let animationId: number
+    
+    let rotationAngleRef = savedRotation
     let time = 0
 
     const phases = [
-      { label: "Courses", progress: 0.0, displayNameEn: "📚 COURSES", displayNameAr: "📚 الدورات", special: false },
-      { label: "Services", progress: 0.1, displayNameEn: "✨ SERVICES", displayNameAr: "✨ الخدمات", special: false },
-      { label: "Library", progress: 0.2, displayNameEn: "📖 LIBRARY", displayNameAr: "📖 المكتبة", special: "brown" },
-      { label: "Music", progress: 0.3, displayNameEn: "🎵 MUSIC", displayNameAr: "🎵 الموسيقى", special: "pink" },
-      { label: "Spirit Animals", progress: 0.4, displayNameEn: "🐺 SPIRIT ANIMALS", displayNameAr: "🐺 الحيوانات الروحية", special: "orange" },
-      { label: "Chakras", progress: 0.5, displayNameEn: "🔴 CHAKRAS", displayNameAr: "🔴 الشاكرات", special: "rainbow" },
-      { label: "Symbolys", progress: 0.6, displayNameEn: "🌀 SYMBOLYS", displayNameAr: "🌀 الرموز", special: "teal" },
-      { label: "Reading Energy", progress: 0.7, displayNameEn: "📅 COSMIC ENERGY", displayNameAr: "📅 الطاقة الكونية", special: "purple" },
-      { label: "Plant Planet", progress: 0.8, displayNameEn: "🌿 PLANT PLANET", displayNameAr: "🌿 كوكب النباتات", special: "green" },
-      { label: "Astral Charts", progress: 0.9, displayNameEn: "⭐ ASTRAL CHARTS", displayNameAr: "⭐ الأبراج والفلك", special: "gold" },
-      { label: "Numerology", progress: 0.95, displayNameEn: "🔢 NUMEROLOGY", displayNameAr: "🔢 علم الأعداد", special: "silver" },
-      { label: "Contact", progress: 0.85, displayNameEn: "📞 CONTACT", displayNameAr: "📞 اتصل", special: "pink" },
-      { label: "Lilith", progress: 0.15, displayNameEn: "✨ WHO IS LILITH ✨", displayNameAr: "✨ من هي ليليث ✨", special: "cyan" }
+      { label: "Courses", progress: 0.0, displayNameEn: "📚 COURSES", displayNameAr: "📚 الدورات", special: false, route: "/phase/courses" },
+      { label: "Services", progress: 0.1, displayNameEn: "✨ SERVICES", displayNameAr: "✨ الخدمات", special: false, route: "/phase/services" },
+      { label: "Library", progress: 0.2, displayNameEn: "📖 LIBRARY", displayNameAr: "📖 المكتبة", special: "brown", route: "/library" },
+      { label: "Music", progress: 0.3, displayNameEn: "🎵 MUSIC", displayNameAr: "🎵 الموسيقى", special: "pink", route: "/music" },
+      { label: "Spirit Animals", progress: 0.4, displayNameEn: "🐺 SPIRIT ANIMALS", displayNameAr: "🐺 الحيوانات الروحية", special: "orange", route: "/spirit-animals" },
+      { label: "Chakras", progress: 0.5, displayNameEn: "🔴 CHAKRAS", displayNameAr: "🔴 الشاكرات", special: "rainbow", route: "/chakras" },
+      { label: "Symbolys", progress: 0.6, displayNameEn: "🌀 SYMBOLYS", displayNameAr: "🌀 الرموز", special: "teal", route: "/symbolys" },
+      { label: "Reading Energy", progress: 0.7, displayNameEn: "📅 COSMIC ENERGY", displayNameAr: "📅 الطاقة الكونية", special: "purple", route: "/reading-energy" },
+      { label: "Plant Planet", progress: 0.8, displayNameEn: "🌿 PLANT PLANET", displayNameAr: "🌿 كوكب النباتات", special: "green", route: "/plant-planet" },
+      { label: "Astral Charts", progress: 0.9, displayNameEn: "⭐ ASTRAL CHARTS", displayNameAr: "⭐ الأبراج والفلك", special: "gold", route: "/astral-charts" },
+      { label: "Numerology", progress: 0.95, displayNameEn: "🔢 NUMEROLOGY", displayNameAr: "🔢 علم الأعداد", special: "silver", route: "/numerology" },
+      { label: "Contact", progress: 0.85, displayNameEn: "📞 CONTACT", displayNameAr: "📞 اتصل", special: "pink", route: "/contact" },
+      { label: "Lilith", progress: 0.15, displayNameEn: "✨ WHO IS LILITH ✨", displayNameAr: "✨ من هي ليليث ✨", special: "cyan", route: "/lilith" }
     ]
-
-    const phasePages: Record<string, string> = {
-      "Courses": "/phase/courses",
-      "Services": "/phase/services",
-      "Library": "/library",
-      "Music": "/music",
-      "Spirit Animals": "/spirit-animals",
-      "Chakras": "/chakras",
-      "Symbolys": "/symbolys",
-      "Reading Energy": "/reading-energy",
-      "Plant Planet": "/plant-planet",
-      "Astral Charts": "/astral-charts",
-      "Numerology": "/numerology",
-      "Contact": "/contact",
-      "Lilith": "/lilith"
-    }
 
     const drawCentralCorona = (x: number, y: number, radius: number) => {
       for (let i = 0; i < 4; i++) {
@@ -213,31 +195,40 @@ export default function EclipseSequence() {
       ctx.lineWidth = 1
       ctx.stroke()
 
-      rotationAngle += 0.0006
+      // Update rotation angle state
+      rotationAngleRef += 0.0006
+      setRotationAngle(rotationAngleRef)
+
+      const newPositions: Array<{x: number, y: number, label: string, route: string, special: string | boolean}> = []
 
       phases.forEach((phase, idx) => {
-        const angle = (idx / phases.length) * Math.PI * 2 + rotationAngle
+        const angle = (idx / phases.length) * Math.PI * 2 + rotationAngleRef
         const x = centerX + Math.cos(angle) * orbitRadius
         const y = centerY + Math.sin(angle) * orbitRadius
-
-        const hitRadius = isMobile ? 45 : 26
-        const dist = Math.hypot(hoveredX - x, hoveredY - y)
-        const isHovered = dist < hitRadius
+        
+        // Store position for HTML overlay
+        newPositions.push({
+          x: x,
+          y: y,
+          label: language === 'en' ? phase.displayNameEn : phase.displayNameAr,
+          route: phase.route,
+          special: phase.special
+        })
 
         ctx.beginPath()
         ctx.moveTo(centerX, centerY)
         ctx.lineTo(x, y)
-        ctx.strokeStyle = isHovered ? 'rgba(0, 180, 255, 0.1)' : 'rgba(0, 130, 245, 0.02)'
+        ctx.strokeStyle = 'rgba(0, 130, 245, 0.02)'
         ctx.lineWidth = 0.6
         ctx.stroke()
 
         const moonRadius = isMobile ? 32 : 24
-        drawRealisticMoon(x, y, moonRadius, phase.progress, isHovered)
+        drawRealisticMoon(x, y, moonRadius, phase.progress, false)
 
         const displayName = language === 'en' ? phase.displayNameEn : phase.displayNameAr
         const isSpecial = phase.special !== false
 
-        if (isSpecial || isHovered) {
+        if (isSpecial) {
           const fontSize = isMobile ? '14px' : '10px'
           ctx.font = `500 ${fontSize} "Space Grotesk", sans-serif`
           ctx.textAlign = 'center'
@@ -260,91 +251,16 @@ export default function EclipseSequence() {
           ctx.fillText(displayName, x, y - labelOffset)
         }
       })
-    }
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect()
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
-      hoveredX = (e.clientX - rect.left) * scaleX
-      hoveredY = (e.clientY - rect.top) * scaleY
-    }
-
-    // Handle both mouse and touch events
-    const handleTouchStart = (e: TouchEvent) => {
-      e.preventDefault()
-      const rect = canvas.getBoundingClientRect()
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
-      const touch = e.touches[0]
       
-      const touchX = (touch.clientX - rect.left) * scaleX
-      const touchY = (touch.clientY - rect.top) * scaleY
-
-      const w = window.innerWidth
-      const h = window.innerHeight
-      const centerX = w / 2
-      const centerY = h / 2
-      const orbitRadius = isMobile ? Math.min(w, h) * 0.45 : Math.min(w, h) * 0.35
-      const clickRadius = isMobile ? 55 : 28
-
-      for (let idx = 0; idx < phases.length; idx++) {
-        const angle = (idx / phases.length) * Math.PI * 2 + rotationAngle
-        const x = centerX + Math.cos(angle) * orbitRadius
-        const y = centerY + Math.sin(angle) * orbitRadius
-        const dist = Math.hypot(touchX - x, touchY - y)
-
-        if (dist < clickRadius) {
-          const page = phasePages[phases[idx].label]
-          if (page) {
-            sessionStorage.setItem('eclipse_rotation_angle', rotationAngle.toString())
-            router.push(page)
-          }
-          break
-        }
-      }
+      setMoonPositions(newPositions)
     }
-
-    const handleClick = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect()
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
-      const clickX = (e.clientX - rect.left) * scaleX
-      const clickY = (e.clientY - rect.top) * scaleY
-
-      const w = window.innerWidth
-      const h = window.innerHeight
-      const centerX = w / 2
-      const centerY = h / 2
-      const orbitRadius = isMobile ? Math.min(w, h) * 0.45 : Math.min(w, h) * 0.35
-      const clickRadius = isMobile ? 55 : 28
-
-      for (let idx = 0; idx < phases.length; idx++) {
-        const angle = (idx / phases.length) * Math.PI * 2 + rotationAngle
-        const x = centerX + Math.cos(angle) * orbitRadius
-        const y = centerY + Math.sin(angle) * orbitRadius
-        const dist = Math.hypot(clickX - x, clickY - y)
-
-        if (dist < clickRadius) {
-          const page = phasePages[phases[idx].label]
-          if (page) {
-            sessionStorage.setItem('eclipse_rotation_angle', rotationAngle.toString())
-            router.push(page)
-          }
-          break
-        }
-      }
-    }
-
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('click', handleClick)
-    window.addEventListener('touchstart', handleTouchStart, { passive: false })
 
     const animate = () => {
-      time += 0.012
       drawScene()
       animationId = requestAnimationFrame(animate)
     }
+    
+    let animationId: number
     animate()
 
     const handleResize = () => {
@@ -354,16 +270,38 @@ export default function EclipseSequence() {
 
     return () => {
       cancelAnimationFrame(animationId)
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('click', handleClick)
-      window.removeEventListener('touchstart', handleTouchStart)
       window.removeEventListener('resize', handleResize)
     }
   }, [router, language])
 
+  // Handle moon click via HTML overlay
+  const handleMoonClick = (route: string) => {
+    router.push(route)
+  }
+
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#02061e]">
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+      
+      {/* Invisible clickable overlay for moons */}
+      {moonPositions.map((moon, index) => (
+        <button
+          key={index}
+          onClick={() => handleMoonClick(moon.route)}
+          className="absolute rounded-full cursor-pointer"
+          style={{
+            left: moon.x - 35,
+            top: moon.y - 35,
+            width: '70px',
+            height: '70px',
+            background: 'transparent',
+            border: 'none',
+            zIndex: 20,
+            touchAction: 'manipulation'
+          }}
+          aria-label={moon.label}
+        />
+      ))}
       
       {/* Language Toggle */}
       <button
@@ -373,7 +311,7 @@ export default function EclipseSequence() {
         {language === 'en' ? 'العربية' : 'English'}
       </button>
 
-      {/* Clean, Non-Exaggerated Animated Header (Pushed higher up, slightly scaled down to avoid blocking any moons) */}
+      {/* Animated Header */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}

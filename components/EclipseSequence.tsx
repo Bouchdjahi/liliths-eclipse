@@ -206,7 +206,6 @@ export default function EclipseSequence() {
       ctx.lineWidth = 1
       ctx.stroke()
 
-      // Larger orbit radius on mobile for better spacing
       const orbitRadius = isMobile ? Math.min(w, h) * 0.45 : Math.min(w, h) * 0.35
       ctx.beginPath()
       ctx.arc(centerX, centerY, orbitRadius, 0, Math.PI * 2)
@@ -221,7 +220,6 @@ export default function EclipseSequence() {
         const x = centerX + Math.cos(angle) * orbitRadius
         const y = centerY + Math.sin(angle) * orbitRadius
 
-        // Larger hit detection radius on mobile
         const hitRadius = isMobile ? 45 : 26
         const dist = Math.hypot(hoveredX - x, hoveredY - y)
         const isHovered = dist < hitRadius
@@ -233,7 +231,6 @@ export default function EclipseSequence() {
         ctx.lineWidth = 0.6
         ctx.stroke()
 
-        // Larger moon size on mobile
         const moonRadius = isMobile ? 32 : 24
         drawRealisticMoon(x, y, moonRadius, phase.progress, isHovered)
 
@@ -241,7 +238,6 @@ export default function EclipseSequence() {
         const isSpecial = phase.special !== false
 
         if (isSpecial || isHovered) {
-          // Larger font on mobile
           const fontSize = isMobile ? '14px' : '10px'
           ctx.font = `500 ${fontSize} "Space Grotesk", sans-serif`
           ctx.textAlign = 'center'
@@ -260,7 +256,6 @@ export default function EclipseSequence() {
           else if (phase.special === "rainbow") labelColor = '#ff88ff'
 
           ctx.fillStyle = labelColor
-          // Adjust label position for mobile
           const labelOffset = isMobile ? 48 : 34
           ctx.fillText(displayName, x, y - labelOffset)
         }
@@ -275,6 +270,41 @@ export default function EclipseSequence() {
       hoveredY = (e.clientY - rect.top) * scaleY
     }
 
+    // Handle both mouse and touch events
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault()
+      const rect = canvas.getBoundingClientRect()
+      const scaleX = canvas.width / rect.width
+      const scaleY = canvas.height / rect.height
+      const touch = e.touches[0]
+      
+      const touchX = (touch.clientX - rect.left) * scaleX
+      const touchY = (touch.clientY - rect.top) * scaleY
+
+      const w = window.innerWidth
+      const h = window.innerHeight
+      const centerX = w / 2
+      const centerY = h / 2
+      const orbitRadius = isMobile ? Math.min(w, h) * 0.45 : Math.min(w, h) * 0.35
+      const clickRadius = isMobile ? 55 : 28
+
+      for (let idx = 0; idx < phases.length; idx++) {
+        const angle = (idx / phases.length) * Math.PI * 2 + rotationAngle
+        const x = centerX + Math.cos(angle) * orbitRadius
+        const y = centerY + Math.sin(angle) * orbitRadius
+        const dist = Math.hypot(touchX - x, touchY - y)
+
+        if (dist < clickRadius) {
+          const page = phasePages[phases[idx].label]
+          if (page) {
+            sessionStorage.setItem('eclipse_rotation_angle', rotationAngle.toString())
+            router.push(page)
+          }
+          break
+        }
+      }
+    }
+
     const handleClick = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect()
       const scaleX = canvas.width / rect.width
@@ -287,8 +317,6 @@ export default function EclipseSequence() {
       const centerX = w / 2
       const centerY = h / 2
       const orbitRadius = isMobile ? Math.min(w, h) * 0.45 : Math.min(w, h) * 0.35
-
-      // Larger click detection radius on mobile
       const clickRadius = isMobile ? 55 : 28
 
       for (let idx = 0; idx < phases.length; idx++) {
@@ -310,6 +338,7 @@ export default function EclipseSequence() {
 
     window.addEventListener('mousemove', handleMouseMove)
     window.addEventListener('click', handleClick)
+    window.addEventListener('touchstart', handleTouchStart, { passive: false })
 
     const animate = () => {
       time += 0.012
@@ -327,6 +356,7 @@ export default function EclipseSequence() {
       cancelAnimationFrame(animationId)
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('click', handleClick)
+      window.removeEventListener('touchstart', handleTouchStart)
       window.removeEventListener('resize', handleResize)
     }
   }, [router, language])

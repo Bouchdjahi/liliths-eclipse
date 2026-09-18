@@ -1,13 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   turbopack: {},
+  reactStrictMode: true,
   images: {
-    domains: ['localhost'],
-  },
-  transpilePackages: ['three'],
-  webpack: (config) => {
-    config.externals = [...config.externals, { canvas: 'canvas' }];
-    return config;
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
 }
 

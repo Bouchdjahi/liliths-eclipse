@@ -289,7 +289,7 @@ export default function Scene3D() {
       const w = window.innerWidth
       const h = window.innerHeight
       const centerX = w / 2
-      const centerY = h / 2 + 60  // Pushed down to make room for the title
+      const centerY = h / 2 + 60
 
       drawCosmicBackground(w, h)
 
@@ -370,7 +370,6 @@ export default function Scene3D() {
     <div className="relative w-full h-screen overflow-hidden bg-[#020308] font-nav">
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-10" />
       
-      {/* Moon Click Targets */}
       {moonPositions.map((moon, index) => (
         <button
           key={index}
@@ -392,7 +391,6 @@ export default function Scene3D() {
         />
       ))}
       
-      {/* Moon Labels (Only visible on hover) */}
       <div className="absolute inset-0 pointer-events-none z-20">
         {moonPositions.map((moon, index) => (
           <motion.div
@@ -414,7 +412,6 @@ export default function Scene3D() {
         ))}
       </div>
       
-      {/* Language Toggle */}
       <button
         onClick={toggleLanguage}
         className="absolute top-6 right-6 z-50 px-4 py-1.5 bg-transparent rounded-full text-[#d1d5db] text-xs tracking-widest hover:border-[#4a8cff] hover:text-[#4a8cff] transition-all duration-300 border border-[#d1d5db]/30 backdrop-blur-sm"
@@ -422,7 +419,6 @@ export default function Scene3D() {
         {language === 'en' ? 'العربية' : 'English'}
       </button>
 
-      {/* Title - Only this text now */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}

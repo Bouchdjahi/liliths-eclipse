@@ -1,0 +1,21 @@
+'use client'
+
+import { useState } from 'react'
+import GatewayEntrance from '@/components/GatewayEntrance'
+import dynamic from 'next/dynamic'
+
+const CosmicUniverse = dynamic(() => import('@/components/CosmicUniverse'), { ssr: false })
+
+export default function Home() {
+  const [hasEntered, setHasEntered] = useState(false)
+
+  const handleEnter = () => {
+    setHasEntered(true)
+  }
+
+  if (!hasEntered) {
+    return <GatewayEntrance onEnter={handleEnter} />
+  }
+
+  return <CosmicUniverse />
+}

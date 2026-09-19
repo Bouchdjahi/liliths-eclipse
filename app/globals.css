@@ -1,54 +1,39 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Jost:wght@200;300;400;500&display=swap');
+@import "tailwindcss";
 
-@layer base {
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+:root {
+  --bg-deep-navy: #03040a;
+  --bg-midnight: #080a14;
+  --accent-silver: #d1d5db;
+  --accent-glow: #4a8cff;
+  --text-soft-white: #f8f9fa;
+  --text-muted: #8892a0;
   
-  body {
-    background: #000000;
-    color: #e0e0e0;
-    overflow-x: hidden;
-    font-family: 'Inter', sans-serif;
-  }
-  
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: #0a0a1a;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: #4a4aff;
-    border-radius: 4px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: #7a7aff;
-  }
+  --font-display: 'Cinzel', serif;
+  --font-nav: 'Jost', sans-serif;
 }
 
-@layer utilities {
-  .glassmorphism {
-    background: rgba(10, 10, 26, 0.6);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(74, 74, 255, 0.3);
-  }
-  
-  .text-glow {
-    text-shadow: 0 0 10px rgba(74, 74, 255, 0.5);
-  }
-  
-  .cosmic-border {
-    border-image: linear-gradient(135deg, #4a4aff, #9a4aff) 1;
-    border-style: solid;
-    border-width: 1px;
-  }
+html, body {
+  background-color: #03040a;
+  color: var(--text-soft-white);
+  font-family: var(--font-nav);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
+  background-image: radial-gradient(circle at 50% 50%, var(--bg-midnight) 0%, var(--bg-deep-navy) 100%);
+  background-attachment: fixed;
+}
+
+.font-display {
+  font-family: var(--font-display) !important;
+}
+
+.font-nav {
+  font-family: var(--font-nav);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
